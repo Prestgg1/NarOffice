@@ -1,0 +1,28 @@
+<b>NarOffice</b> sadə, sürətli və pulsuz ofis proqramıdır. Word, Excel və PowerPoint fayllarına telefonunuzda baxın və onları redaktə edin: hesab, reklam, izləmə və internet bağlantısı tələb olunmur.
+
+Proqram Office Open XML fayllarını birbaşa oxuyur, ona görə tez açılır və az yer tutur. Yalnız dəyişdirdiyiniz hissə yenidən yazılır, faylın qalan hər şeyi olduğu kimi saxlanılır.
+
+<p><b>Sənədlər (.docx)</b></p>
+<ul>
+<li>Mobil üçün rahat oxuma görünüşü, iki barmaqla böyütmə</li>
+<li>Qalın, kursiv, altdan və üstündən xətt, yuxarı və aşağı indeks, şrift ölçüsü, mətn rəngi və vurğulama</li>
+<li>Başlıqlar, düzləndirmə, markerli və nömrəli siyahılar, girintilər</li>
+<li>Cədvəllər, şəkillər və səhifə sonu</li>
+<li>Axtarış və əvəzetmə, geri al və irəli</li>
+</ul>
+
+<p><b>Cədvəllər (.xlsx, .csv)</b></p>
+<ul>
+<li>Donmuş sətir və sütunlar, birləşdirilmiş xanalar, rənglər, sərhədlər və ədəd formatları</li>
+<li>60-dan çox funksiyalı düsturlar: SUM, IF, VLOOKUP, SUMIF, INDEX, MATCH və s.</li>
+<li>Sətir və sütun əlavə edib silmək, bir neçə vərəq, kopyala və yapışdır, avtomatik cəm</li>
+</ul>
+
+<p><b>Təqdimatlar (.pptx)</b></p>
+<ul>
+<li>Slaydlar mövzuları, maketləri, fiqurları, şəkilləri və cədvəlləri ilə göstərilir</li>
+<li>Mətni redaktə edin, obyektləri yerini və ölçüsünü dəyişin, mətn qutusu və şəkil əlavə edin</li>
+<li>Slayd əlavə edin, surətini çıxarın, sırasını dəyişin və silin, tam ekran nümayiş</li>
+</ul>
+
+Köhnə ikili formatlar (.doc, .xls, .ppt) dəstəklənmir.

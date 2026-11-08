@@ -1,0 +1,28 @@
+<b>NarOffice</b> is a simple, fast and free office suite. View and edit Word, Excel and PowerPoint files on your phone, without an account, ads, tracking or internet access.
+
+It reads Office Open XML files directly instead of bundling a desktop office suite, so it starts quickly and stays small. Only what you change is rewritten: everything else in your file is saved exactly as it was.
+
+<p><b>Documents (.docx)</b></p>
+<ul>
+<li>Mobile-friendly reading view with pinch to zoom</li>
+<li>Bold, italic, underline, strikethrough, superscript, subscript, font size, text colour and highlight</li>
+<li>Titles and headings, alignment, bulleted and numbered lists, indents</li>
+<li>Tables, pictures and page breaks</li>
+<li>Find and replace, undo and redo</li>
+</ul>
+
+<p><b>Spreadsheets (.xlsx, .csv)</b></p>
+<ul>
+<li>Fast grid with frozen panes, merged cells, colours, borders and number formats</li>
+<li>Formulas with more than 60 functions, including SUM, IF, VLOOKUP, SUMIF, INDEX and MATCH</li>
+<li>Insert and delete rows and columns, several sheets, copy and paste, AutoSum</li>
+</ul>
+
+<p><b>Presentations (.pptx)</b></p>
+<ul>
+<li>Slides shown with their themes, layouts, shapes, pictures and tables</li>
+<li>Edit text, move and resize objects, add text boxes and pictures</li>
+<li>Add, duplicate, reorder and delete slides, full-screen slideshow</li>
+</ul>
+
+Old binary formats (.doc, .xls, .ppt) are not supported.
