@@ -131,6 +131,9 @@ class DocxDocument(val pkg: OpcPackage) {
         return i
     }
 
+    fun splice(container: XElement, index: Int, removeCount: Int, insert: List<io.github.Prestgg.naroffice.xml.XNode>) =
+        history.splice(container, index, removeCount, insert, ::changed)
+
     fun replace(container: XElement, old: List<XElement>, new: List<XElement>) {
         val i = indexIn(container, old.first())
         history.splice(container, i, old.size, new, ::changed)
