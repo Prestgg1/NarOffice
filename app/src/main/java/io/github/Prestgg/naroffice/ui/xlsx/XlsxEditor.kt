@@ -127,6 +127,9 @@ fun XlsxEditor(
     var colorDialog by remember { mutableStateOf(false) }
     var functionsDialog by remember { mutableStateOf(false) }
     var cellMenu by remember { mutableStateOf(false) }
+    var searching by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    var matchIndex by remember { mutableIntStateOf(0) }
 
     val sheet = remember(sheetIndex, tick) { doc.sheet(sheetIndex.coerceIn(0, doc.sheetCount - 1)) }
     val sel = grid.selection
@@ -150,6 +153,7 @@ fun XlsxEditor(
         if (moveDown) {
             val m = sheet.mergeAt(cr, cc)
             grid.select((m?.r2 ?: cr) + 1, cc)
+            grid.reveal = grid.anchor
         }
         refresh()
     }
@@ -175,6 +179,23 @@ fun XlsxEditor(
     }
 
     val current = sheet.cell(cr, cc)?.style
+
+    val matches = remember(sheet, tick, query) {
+        if (query.isEmpty()) emptyList() else buildList {
+            for (r in 0..sheet.maxRow) for (c in 0..sheet.maxCol) {
+                val cell = sheet.cell(r, c) ?: continue
+                if (cell.display.contains(query, true) || (cell.formula?.contains(query, true) == true)) add(r to c)
+            }
+        }
+    }
+
+    fun goToMatch(i: Int) {
+        if (matches.isEmpty()) return
+        matchIndex = ((i % matches.size) + matches.size) % matches.size
+        val (r, c) = matches[matchIndex]
+        grid.select(r, c)
+        grid.reveal = r to c
+    }
 
     fun copy(cut: Boolean) {
         val sb = StringBuilder()
@@ -215,7 +236,14 @@ fun XlsxEditor(
 
     Scaffold(
         topBar = {
-            EditorTopBar(
+            if (searching) io.github.Prestgg.naroffice.ui.common.SearchBar(
+                query, { query = it; matchIndex = 0 },
+                status = if (query.isEmpty()) "" else if (matches.isEmpty()) stringResource(R.string.no_matches)
+                else stringResource(R.string.matches, matchIndex + 1, matches.size),
+                onPrev = { goToMatch(matchIndex - 1) },
+                onNext = { goToMatch(matchIndex + 1) },
+                onClose = { searching = false; query = "" },
+            ) else EditorTopBar(
                 title = session.name,
                 kind = sd.kind,
                 modified = modified,
@@ -233,13 +261,14 @@ fun XlsxEditor(
                     add(MenuAction(stringResource(R.string.save), onSave))
                     add(MenuAction(stringResource(R.string.save_as), onSaveAs))
                     add(MenuAction(stringResource(R.string.share), onShare))
+                    add(MenuAction(stringResource(R.string.find)) { searching = true })
                     add(MenuAction(stringResource(R.string.zoom_in)) { grid.zoom = (grid.zoom * 1.2f).coerceAtMost(3f) })
                     add(MenuAction(stringResource(R.string.zoom_out)) { grid.zoom = (grid.zoom / 1.2f).coerceAtLeast(0.4f) })
                 },
             )
         },
     ) { pad ->
-        Column(Modifier.fillMaxSize().padding(pad)) {
+        Column(Modifier.fillMaxSize().padding(pad).imePadding()) {
             // Name box and formula line.
             Surface(color = MaterialTheme.colorScheme.surfaceContainerLow) {
                 Row(Modifier.fillMaxWidth().height(40.dp), verticalAlignment = Alignment.CenterVertically) {

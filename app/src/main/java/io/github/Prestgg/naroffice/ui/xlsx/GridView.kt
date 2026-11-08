@@ -98,6 +98,9 @@ class GridState {
         get() = CellRange(min(anchor.first, focus.first), min(anchor.second, focus.second),
             max(anchor.first, focus.first), max(anchor.second, focus.second))
 
+    /** A cell to bring into view; consumed by the grid. */
+    var reveal by mutableStateOf<Pair<Int, Int>?>(null)
+
     fun select(r: Int, c: Int) {
         anchor = r to c; focus = r to c
     }
@@ -278,6 +281,27 @@ fun GridView(
                 }
             }
         }
+    }
+
+    androidx.compose.runtime.LaunchedEffect(state.reveal, size) {
+        val (r, c) = state.reveal ?: return@LaunchedEffect
+        if (size == Size.Zero) return@LaunchedEffect
+        val bodyW = size.width - headerW - frozenW
+        val bodyH = size.height - headerH - frozenH
+        if (c >= frozenCols) {
+            val x0 = colAxis.start(c) - frozenW
+            val x1 = colAxis.end(c) - frozenW
+            if (x0 < state.scrollX) state.scrollX = x0
+            else if (x1 > state.scrollX + bodyW) state.scrollX = x1 - bodyW
+        }
+        if (r >= frozenRows) {
+            val y0 = rowAxis.start(r) - frozenH
+            val y1 = rowAxis.end(r) - frozenH
+            if (y0 < state.scrollY) state.scrollY = y0
+            else if (y1 > state.scrollY + bodyH) state.scrollY = y1 - bodyH
+        }
+        clampScroll()
+        state.reveal = null
     }
 
     Canvas(modifier.fillMaxSize().then(gestures)) {
