@@ -391,10 +391,40 @@ private fun ParagraphView(
                 )
             }
         }
+        // Text boxes anchored in this paragraph, shown below it (read-only).
+        val boxes = remember(p) { textBoxes(p) }
+        for (box in boxes) {
+            Column(
+                Modifier.fillMaxWidth().padding(vertical = 4.dp).border(0.5.dp, Color(0xFFB0B0B0)).padding(6.dp),
+            ) {
+                for (b in doc.blocksOf(box)) {
+                    androidx.compose.runtime.key(ctl.keyOf(b.el)) {
+                        BlockView(b, ctl, r, emptyMap(), editing = false, query = query, tick = 0)
+                    }
+                }
+            }
+        }
         if (pp.borderBottom) HorizontalDivider(color = Color(0xFF555555))
         val hasBreak = remember(p) { p.descendants().any { it.name == "w:br" && it["w:type"] == "page" } }
         if (hasBreak) PageBreakMark()
     }
+}
+
+/** w:txbxContent elements of a paragraph, skipping the VML fallback copies. */
+private fun textBoxes(p: XElement): List<XElement> {
+    val out = ArrayList<XElement>()
+    fun walk(e: XElement) {
+        for (c in e.children) {
+            if (c !is XElement) continue
+            when (c.localName) {
+                "Fallback" -> {}
+                "txbxContent" -> out.add(c)
+                else -> walk(c)
+            }
+        }
+    }
+    walk(p)
+    return out
 }
 
 @Composable
