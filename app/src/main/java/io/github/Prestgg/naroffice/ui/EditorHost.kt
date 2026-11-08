@@ -16,5 +16,7 @@ fun EditorHost(
 ) {
     when (val d = session.doc) {
         is WordDoc -> DocxEditor(session, d.doc, saveTick, onBack, onSave, onSaveAs, onShare)
+        is io.github.Prestgg.naroffice.ui.xlsx.SheetDoc ->
+            io.github.Prestgg.naroffice.ui.xlsx.XlsxEditor(session, d, saveTick, onBack, onSave, onSaveAs, onShare)
     }
 }

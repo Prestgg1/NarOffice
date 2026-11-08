@@ -125,6 +125,11 @@ fun GridView(
     onSelectHeader: (row: Int?, col: Int?) -> Unit,
 ) {
     val density = LocalDensity.current
+    // The gesture coroutine outlives compositions: always call the latest callbacks.
+    val tapCb by androidx.compose.runtime.rememberUpdatedState(onTap)
+    val doubleTapCb by androidx.compose.runtime.rememberUpdatedState(onDoubleTap)
+    val longPressCb by androidx.compose.runtime.rememberUpdatedState(onLongPress)
+    val headerCb by androidx.compose.runtime.rememberUpdatedState(onSelectHeader)
     val measurer = rememberTextMeasurer(cacheSize = 512)
     val scope = rememberCoroutineScope()
     val dp = density.density
@@ -193,7 +198,7 @@ fun GridView(
                 // Long press: drag to extend the selection.
                 val (r, c) = hit(down.position)
                 if (r >= 0 && c >= 0) {
-                    onLongPress(r, c)
+                    longPressCb(r, c)
                     while (true) {
                         val e = awaitPointerEvent()
                         val ch = e.changes.first()
@@ -209,11 +214,11 @@ fun GridView(
                 val (r, c) = hit(down.position)
                 when {
                     r < 0 && c < 0 -> {}
-                    r < 0 -> onSelectHeader(null, c)
-                    c < 0 -> onSelectHeader(r, null)
+                    r < 0 -> headerCb(null, c)
+                    c < 0 -> headerCb(r, null)
                     else -> {
                         val sel = state.selection
-                        if (sel.r1 == r && sel.c1 == c && sel.rows == 1 && sel.cols == 1) onDoubleTap(r, c) else onTap(r, c)
+                        if (sel.r1 == r && sel.c1 == c && sel.rows == 1 && sel.cols == 1) doubleTapCb(r, c) else tapCb(r, c)
                     }
                 }
                 return@awaitEachGesture
