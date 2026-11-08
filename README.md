@@ -24,7 +24,7 @@ else in the file (styles, charts, macros, comments, metadata…) is saved exactl
 - Fast canvas grid with frozen panes, merged cells, fills, borders and number formats
 - Formula engine with 60+ functions (SUM, IF, VLOOKUP, SUMIF, INDEX/MATCH, TEXT, dates…)
 - Cell formatting, number formats, insert/delete rows and columns, multiple sheets
-- Copy/paste ranges, AutoSum, sum/average/count of the selection
+- Copy/paste ranges, AutoSum, sum/average/count of the selection, find
 
 **Presentations (.pptx)**
 - Accurate slide rendering (themes, layouts, placeholders, shapes, pictures, tables)
@@ -33,6 +33,7 @@ else in the file (styles, charts, macros, comments, metadata…) is saved exactl
 
 **Everywhere**
 - Open files from any app or file manager, save in place or as a copy, share
+- Print or save as PDF
 - Recent files with pinning
 - Light and dark theme, English and Azerbaijani interface
 

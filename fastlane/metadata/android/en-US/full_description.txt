@@ -25,4 +25,10 @@ It reads Office Open XML files directly instead of bundling a desktop office sui
 <li>Add, duplicate, reorder and delete slides, full-screen slideshow</li>
 </ul>
 
+<p><b>Everywhere</b></p>
+<ul>
+<li>Print or save as PDF</li>
+<li>Open files from any app, save in place or as a copy, share</li>
+</ul>
+
 Old binary formats (.doc, .xls, .ppt) are not supported.

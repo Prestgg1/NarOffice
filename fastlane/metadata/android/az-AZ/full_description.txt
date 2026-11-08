@@ -25,4 +25,10 @@ Proqram Office Open XML fayllarını birbaşa oxuyur, ona görə tez açılır v
 <li>Slayd əlavə edin, surətini çıxarın, sırasını dəyişin və silin, tam ekran nümayiş</li>
 </ul>
 
+<p><b>Hər yerdə</b></p>
+<ul>
+<li>Çap etmək və ya PDF kimi saxlamaq</li>
+<li>Faylları istənilən proqramdan açın, yerində və ya nüsxə kimi saxlayın, paylaşın</li>
+</ul>
+
 Köhnə ikili formatlar (.doc, .xls, .ppt) dəstəklənmir.
