@@ -769,7 +769,7 @@ class PptxDocument(val pkg: OpcPackage) {
         var colorSet = false
         for ((li, l) in layers.withIndex()) {
             // A shape style's font colour beats inherited list styles, not the run's own colour.
-            val colorAllowed = fontColor == null || li == layers.size - 1
+            val colorAllowed = fontColor == null || (li == layers.size - 1 && l.localName in setOf("rPr", "endParaRPr"))
             l["sz"]?.toFloatOrNull()?.let { p = p.copy(sizePt = it / 100f) }
             l["b"]?.let { p = p.copy(bold = it == "1" || it == "true") }
             l["i"]?.let { p = p.copy(italic = it == "1" || it == "true") }

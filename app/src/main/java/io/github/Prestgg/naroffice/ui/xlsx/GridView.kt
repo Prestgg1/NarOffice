@@ -135,7 +135,20 @@ fun GridView(
     val dp = density.density
     val zoom = state.zoom
     val colAxis = remember(sheet, tick, zoom) { Axis { c -> sheet.colWidthPt(c) * zoom * dp * 1.25f } }
-    val rowAxis = remember(sheet, tick, zoom) { Axis { r -> sheet.rowHeightPt(r) * zoom * dp * 1.25f } }
+    val rowAxis = remember(sheet, tick, zoom) {
+        Axis { r ->
+            // Rows grow to fit their largest font, as in Excel (unless hidden).
+            val base = sheet.rowHeightPt(r)
+            if (base <= 0f || r > sheet.maxRow) base * zoom * dp * 1.25f else {
+                var font = 0f
+                for (c in 0..minOf(sheet.maxCol, 255)) {
+                    val cell = sheet.cell(r, c) ?: continue
+                    if (!cell.style.wrap && cell.display.isNotEmpty()) font = max(font, cell.style.fontSizePt)
+                }
+                max(base, font * 1.32f) * zoom * dp * 1.25f
+            }
+        }
+    }
     val headerH = 24f * dp
     val headerW = 44f * dp
     val frozenRows = sheet.frozenRows

@@ -261,7 +261,8 @@ fun PptxEditor(
         },
         floatingActionButton = {
             if (!editing) {
-                FloatingActionButton({ editing = true }, containerColor = MaterialTheme.colorScheme.primary) {
+                FloatingActionButton({ editing = true }, containerColor = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 132.dp)) {
                     Icon(Icons.Default.Edit, stringResource(R.string.edit), tint = MaterialTheme.colorScheme.onPrimary)
                 }
             }
