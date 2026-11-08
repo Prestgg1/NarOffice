@@ -13,7 +13,7 @@ Repo: https://github.com/Prestgg1/NarOffice
 Builds:
   - versionName: 1.0.0
     versionCode: 1
-    commit: v1.0.0
+    commit: 87d48a10306261de5efd0290c0e2e704a790e449
     subdir: app
     gradle:
       - yes
