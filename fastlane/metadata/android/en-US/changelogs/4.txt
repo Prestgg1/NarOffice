@@ -1,0 +1,1 @@
+PDFs whose header does not start at the first byte now open.
