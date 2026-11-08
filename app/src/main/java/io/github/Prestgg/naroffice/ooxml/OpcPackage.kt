@@ -9,6 +9,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.zip.CRC32
 import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
@@ -23,25 +24,40 @@ class Relationship(val id: String, val type: String, val target: String, val ext
 class OpcPackage private constructor(
     private val order: MutableList<String>,
     private val raw: MutableMap<String, ByteArray>,
-) {
+    /** For packages opened from a file: parts are read from the ZIP only when needed. */
+    private val zip: ZipFile? = null,
+    private val zipEntries: MutableMap<String, ZipEntry> = HashMap(),
+) : java.io.Closeable {
     private val parsed = HashMap<String, XDocument>()
     private val dirty = HashSet<String>()
     private val relsCache = HashMap<String, List<Relationship>>()
 
     val partNames: List<String> get() = order.toList()
 
-    fun exists(part: String): Boolean = raw.containsKey(norm(part)) || parsed.containsKey(norm(part))
+    private fun has(p: String) = raw.containsKey(p) || parsed.containsKey(p) || zipEntries.containsKey(p)
+
+    fun exists(part: String): Boolean = has(norm(part))
+
+    /** Size of a part in bytes, without reading it (for unchanged parts of a file-backed package). */
+    fun size(part: String): Long {
+        val p = norm(part)
+        raw[p]?.let { return it.size.toLong() }
+        return zipEntries[p]?.size ?: -1L
+    }
 
     fun bytes(part: String): ByteArray? {
         val p = norm(part)
         if (p in dirty) parsed[p]?.let { return it.toBytes() }
-        return raw[p]
+        raw[p]?.let { return it }
+        val e = zipEntries[p] ?: return null
+        // Not cached: large media stay on disk and are decoded on demand.
+        return zip!!.getInputStream(e).use { it.readBytes() }
     }
 
     fun xml(part: String): XDocument? {
         val p = norm(part)
         parsed[p]?.let { return it }
-        val b = raw[p] ?: return null
+        val b = raw[p] ?: zipEntries[p]?.let { e -> zip!!.getInputStream(e).use { it.readBytes() } } ?: return null
         val doc = Xml.parse(b)
         parsed[p] = doc
         return doc
@@ -54,7 +70,8 @@ class OpcPackage private constructor(
 
     fun putXml(part: String, doc: XDocument, contentType: String? = null) {
         val p = norm(part)
-        if (p !in raw && p !in parsed) order.add(p)
+        if (!has(p)) order.add(p)
+        zipEntries.remove(p)
         parsed[p] = doc
         dirty.add(p)
         raw.remove(p)
@@ -64,7 +81,8 @@ class OpcPackage private constructor(
 
     fun putBytes(part: String, data: ByteArray, contentType: String? = null) {
         val p = norm(part)
-        if (p !in raw && p !in parsed) order.add(p)
+        if (!has(p)) order.add(p)
+        zipEntries.remove(p)
         raw[p] = data
         parsed.remove(p)
         dirty.remove(p)
@@ -74,7 +92,7 @@ class OpcPackage private constructor(
 
     fun remove(part: String) {
         val p = norm(part)
-        raw.remove(p); parsed.remove(p); dirty.remove(p); order.remove(p)
+        raw.remove(p); parsed.remove(p); dirty.remove(p); order.remove(p); zipEntries.remove(p)
         relsCache.remove(p)
         val ct = xml("[Content_Types].xml") ?: return
         ct.root.children.removeAll { it is XElement && it.localName == "Override" && it["PartName"] == "/$p" }
@@ -212,6 +230,21 @@ class OpcPackage private constructor(
         // [Content_Types].xml must come first for some readers.
         val names = order.sortedBy { if (it == "[Content_Types].xml") 0 else 1 }
         for (name in names) {
+            val source = if (name !in dirty && name !in raw) zipEntries[name] else null
+            if (source != null) {
+                // Unchanged part of a file-backed package: stream it across without buffering it all.
+                val entry = ZipEntry(name)
+                if (isPrecompressed(name) && source.crc != -1L && source.size >= 0) {
+                    entry.method = ZipEntry.STORED
+                    entry.size = source.size
+                    entry.compressedSize = source.size
+                    entry.crc = source.crc
+                }
+                zos.putNextEntry(entry)
+                zip!!.getInputStream(source).use { it.copyTo(zos, 64 * 1024) }
+                zos.closeEntry()
+                continue
+            }
             val data = bytes(name) ?: continue
             val entry = ZipEntry(name)
             if (isPrecompressed(name)) {
@@ -229,6 +262,10 @@ class OpcPackage private constructor(
     }
 
     fun toBytes(): ByteArray = ByteArrayOutputStream().also { write(it) }.toByteArray()
+
+    override fun close() {
+        runCatching { zip?.close() }
+    }
 
     private fun isPrecompressed(name: String): Boolean {
         val ext = name.substringAfterLast('.', "").lowercase()
@@ -265,6 +302,29 @@ class OpcPackage private constructor(
         }
 
         fun read(bytes: ByteArray): OpcPackage = read(bytes.inputStream())
+
+        /** Opens a package from a file, reading parts lazily. The file must stay until [close]. */
+        fun open(file: java.io.File): OpcPackage {
+            val zf = try {
+                ZipFile(file)
+            } catch (e: java.util.zip.ZipException) {
+                throw OfficeFormatException("Not an Office Open XML file")
+            }
+            val order = ArrayList<String>()
+            val entries = HashMap<String, ZipEntry>()
+            for (e in zf.entries()) {
+                if (e.isDirectory) continue
+                val name = norm(e.name)
+                if (name.contains("..") || name in entries) continue
+                entries[name] = e
+                order.add(name)
+            }
+            if (!entries.containsKey("[Content_Types].xml")) {
+                zf.close()
+                throw OfficeFormatException("Not an Office Open XML file")
+            }
+            return OpcPackage(order, HashMap(), zf, entries)
+        }
 
         fun fromParts(parts: Map<String, String>): OpcPackage {
             val order = parts.keys.toMutableList()

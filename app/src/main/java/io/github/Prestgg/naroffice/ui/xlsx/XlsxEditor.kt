@@ -100,6 +100,7 @@ class SheetDoc(val doc: XlsxDocument, val csv: Boolean) : OfficeDoc() {
         doc.history.markSaved()
     }
     override fun markSaved() = doc.history.markSaved()
+    override fun close() = doc.pkg.close()
 }
 
 @OptIn(ExperimentalFoundationApi::class)

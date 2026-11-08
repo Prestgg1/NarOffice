@@ -11,15 +11,28 @@ class WordDoc(val doc: DocxDocument) : OfficeDoc() {
     override val isModified get() = doc.isModified
     override fun save(out: OutputStream) = doc.save(out)
     override fun markSaved() = doc.history.markSaved()
+    override fun close() = doc.pkg.close()
 }
 
 object Openers {
-    fun open(kind: DocKind, bytes: ByteArray): OfficeDoc = when (kind) {
-        DocKind.WORD -> WordDoc(DocxDocument.open(bytes))
-        DocKind.SHEET -> io.github.Prestgg.naroffice.ui.xlsx.SheetDoc(io.github.Prestgg.naroffice.xlsx.XlsxDocument.open(bytes), csv = false)
-        DocKind.CSV -> io.github.Prestgg.naroffice.ui.xlsx.SheetDoc(
-            io.github.Prestgg.naroffice.xlsx.XlsxDocument.fromCsv(String(bytes, Charsets.UTF_8).removePrefix("\uFEFF")), csv = true)
-        DocKind.SLIDES -> io.github.Prestgg.naroffice.ui.pptx.SlidesDoc(io.github.Prestgg.naroffice.pptx.PptxDocument.open(bytes))
+    fun open(kind: DocKind, file: java.io.File): OfficeDoc {
+        if (kind == DocKind.CSV) {
+            return io.github.Prestgg.naroffice.ui.xlsx.SheetDoc(
+                io.github.Prestgg.naroffice.xlsx.XlsxDocument.fromCsv(file.readText(Charsets.UTF_8).removePrefix("\uFEFF")), csv = true)
+        }
+        val pkg = io.github.Prestgg.naroffice.ooxml.OpcPackage.open(file)
+        try {
+            return when (kind) {
+                DocKind.WORD -> WordDoc(DocxDocument(pkg))
+                DocKind.SHEET -> io.github.Prestgg.naroffice.ui.xlsx.SheetDoc(
+                    io.github.Prestgg.naroffice.xlsx.XlsxDocument(pkg).also { it.recalcIfStale() }, csv = false)
+                DocKind.SLIDES -> io.github.Prestgg.naroffice.ui.pptx.SlidesDoc(io.github.Prestgg.naroffice.pptx.PptxDocument(pkg))
+                DocKind.CSV -> error("unreachable")
+            }
+        } catch (t: Throwable) {
+            pkg.close()
+            throw t
+        }
     }
 
     fun blank(kind: DocKind): OfficeDoc = when (kind) {

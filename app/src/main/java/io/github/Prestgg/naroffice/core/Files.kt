@@ -7,7 +7,8 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.zip.ZipInputStream
+import java.io.File
+import java.util.zip.ZipFile
 
 enum class DocKind(val ext: String, val mime: String) {
     WORD("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
@@ -31,17 +32,40 @@ object Files {
         return uri.lastPathSegment?.substringAfterLast('/') ?: "document"
     }
 
-    fun read(ctx: Context, uri: Uri): ByteArray =
-        ctx.contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: error("Cannot open $uri")
+    /** Folder for local copies of opened files. */
+    private fun workDir(ctx: Context): File {
+        for (base in listOfNotNull(ctx.cacheDir, ctx.externalCacheDir, ctx.filesDir)) {
+            val d = File(base, "open")
+            if ((d.isDirectory || d.mkdirs()) && d.canWrite()) return d
+        }
+        error("No writable cache directory")
+    }
+
+    /** Removes local copies left from earlier runs or closed documents. */
+    fun cleanWorkDir(ctx: Context, olderThan: Long) {
+        runCatching { workDir(ctx).listFiles()?.forEach { if (it.lastModified() < olderThan) it.delete() } }
+    }
+
+    /**
+     * Copies a document to local storage in a streaming fashion, so that large files (with videos
+     * or many pictures) never have to fit in memory at once.
+     */
+    fun copyToLocal(ctx: Context, uri: Uri): File {
+        val f = File(workDir(ctx), "doc-${System.nanoTime()}")
+        val input = ctx.contentResolver.openInputStream(uri) ?: error("Cannot open $uri")
+        input.use { i -> f.outputStream().use { o -> i.copyTo(o, 256 * 1024) } }
+        return f
+    }
 
     /** Detects the document type from the content, falling back to the file name. */
-    fun detect(bytes: ByteArray, name: String): DocKind {
+    fun detect(file: File, name: String): DocKind {
         val lower = name.lowercase()
-        if (bytes.size >= 4 && bytes[0] == 'P'.code.toByte() && bytes[1] == 'K'.code.toByte()) {
+        val head = ByteArray(8)
+        val n = file.inputStream().use { it.read(head) }
+        if (n >= 4 && head[0] == 'P'.code.toByte() && head[1] == 'K'.code.toByte()) {
             runCatching {
-                ZipInputStream(bytes.inputStream()).use { z ->
-                    while (true) {
-                        val e = z.nextEntry ?: break
+                ZipFile(file).use { z ->
+                    for (e in z.entries()) {
                         when {
                             e.name.startsWith("word/") -> return DocKind.WORD
                             e.name.startsWith("xl/") -> return DocKind.SHEET
@@ -51,8 +75,9 @@ object Files {
                 }
             }
         }
+        val bytes = head
         // Legacy binary Office files (OLE compound documents).
-        if (bytes.size >= 8 && bytes[0] == 0xD0.toByte() && bytes[1] == 0xCF.toByte()) {
+        if (n >= 8 && bytes[0] == 0xD0.toByte() && bytes[1] == 0xCF.toByte()) {
             throw UnsupportedFormatException(legacy = true)
         }
         if (lower.endsWith(".csv") || lower.endsWith(".tsv") || lower.endsWith(".txt")) return DocKind.CSV
@@ -66,11 +91,12 @@ object Files {
                 Intent.FLAG_GRANT_WRITE_URI_PERMISSION) == android.content.pm.PackageManager.PERMISSION_GRANTED
     }
 
-    fun write(ctx: Context, uri: Uri, data: ByteArray) {
+    /** Writes a document by streaming it into [uri]. */
+    fun write(ctx: Context, uri: Uri, writer: (java.io.OutputStream) -> Unit) {
         val out = runCatching { ctx.contentResolver.openOutputStream(uri, "wt") }.getOrNull()
             ?: ctx.contentResolver.openOutputStream(uri, "w")
             ?: error("Cannot write $uri")
-        out.use { it.write(data) }
+        out.buffered(256 * 1024).use { writer(it) }
     }
 
     fun takePermission(ctx: Context, uri: Uri) {

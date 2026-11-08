@@ -129,6 +129,7 @@ class SlidesDoc(val doc: PptxDocument) : OfficeDoc() {
     override val isModified get() = doc.isModified
     override fun save(out: OutputStream) = doc.save(out)
     override fun markSaved() = doc.history.markSaved()
+    override fun close() = doc.pkg.close()
 }
 
 private val DESK = Color(0xFFE9E4E3)

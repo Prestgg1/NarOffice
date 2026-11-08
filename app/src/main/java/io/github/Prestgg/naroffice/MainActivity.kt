@@ -55,7 +55,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        if (savedInstanceState == null) pendingUri = intentUri(intent)
+        if (savedInstanceState == null) {
+            pendingUri = intentUri(intent)
+            // Local copies from an earlier run are no longer needed.
+            val started = System.currentTimeMillis()
+            Thread { Files.cleanWorkDir(this, started - 1000) }.start()
+        }
         setContent {
             NarTheme {
                 Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -96,6 +101,18 @@ class MainActivity : ComponentActivity() {
         val savedMsg = stringResource(R.string.saved)
         val errSave = stringResource(R.string.error_save)
 
+        fun setSession(s: Session?) {
+            val old = session
+            session = s
+            if (old != null && old !== s) {
+                // Close after the editor has left the screen; image loads may still be finishing.
+                scope.launch {
+                    kotlinx.coroutines.delay(5000)
+                    withContext(Dispatchers.IO) { old.close() }
+                }
+            }
+        }
+
         fun open(uri: Uri, persist: Boolean) {
             loading = true
             scope.launch {
@@ -103,14 +120,19 @@ class MainActivity : ComponentActivity() {
                     runCatching {
                         if (persist) Files.takePermission(ctx, uri)
                         val name = Files.displayName(ctx, uri)
-                        val bytes = Files.read(ctx, uri)
-                        val kind = Files.detect(bytes, name)
-                        Session(uri, name, Openers.open(kind, bytes))
+                        val file = Files.copyToLocal(ctx, uri)
+                        try {
+                            val kind = Files.detect(file, name)
+                            Session(uri, name, Openers.open(kind, file), file)
+                        } catch (t: Throwable) {
+                            file.delete()
+                            throw t
+                        }
                     }
                 }
                 loading = false
                 result.onSuccess {
-                    session = it
+                    setSession(it)
                     recents.add(uri, it.name, it.kind)
                     recentTick++
                 }.onFailure { e ->
@@ -134,7 +156,7 @@ class MainActivity : ComponentActivity() {
                 val r = withContext(Dispatchers.IO) {
                     runCatching {
                         Files.takePermission(ctx, uri)
-                        Files.write(ctx, uri, s.doc.toBytes())
+                        Files.write(ctx, uri) { out -> s.doc.save(out) }
                         s.uri = uri
                         s.name = Files.displayName(ctx, uri)
                     }
@@ -166,7 +188,7 @@ class MainActivity : ComponentActivity() {
                 saveAs(then); return
             }
             scope.launch {
-                val r = withContext(Dispatchers.IO) { runCatching { Files.write(ctx, uri, s.doc.toBytes()) } }
+                val r = withContext(Dispatchers.IO) { runCatching { Files.write(ctx, uri) { out -> s.doc.save(out) } } }
                 r.onSuccess {
                     s.doc.markSaved(); saveTick++
                     Toast.makeText(ctx, savedMsg, Toast.LENGTH_SHORT).show()
@@ -188,7 +210,7 @@ class MainActivity : ComponentActivity() {
                     dir.listFiles()?.forEach { it.delete() }
                     val ext = if (s.kind == DocKind.CSV) "csv" else s.kind.ext
                     val name = s.name.substringBeforeLast('.').ifBlank { "document" } + "." + ext
-                    File(dir, name).also { it.writeBytes(s.doc.toBytes()) }
+                    File(dir, name).also { f -> f.outputStream().buffered().use { s.doc.save(it) } }
                 }
                 val uri = FileProvider.getUriForFile(ctx, "${ctx.packageName}.files", file)
                 val send = Intent(Intent.ACTION_SEND).apply {
@@ -204,7 +226,7 @@ class MainActivity : ComponentActivity() {
             val s = session
             s?.flush()
             if (s != null && s.doc.isModified) confirmClose = then else {
-                session = null; then()
+                setSession(null); then()
             }
         }
 
@@ -243,7 +265,7 @@ class MainActivity : ComponentActivity() {
                         },
                     ) + "." + kind.ext
                     runCatching { Openers.blank(kind) }
-                        .onSuccess { session = Session(null, name, it) }
+                        .onSuccess { setSession(Session(null, name, it)) }
                         .onFailure { error = errFormat }
                 },
                 onRemoveRecent = { recents.remove(it.uri); recentTick++ },
@@ -287,13 +309,13 @@ class MainActivity : ComponentActivity() {
                 confirmButton = {
                     TextButton({
                         confirmClose = null
-                        save { session = null; then() }
+                        save { setSession(null); then() }
                     }) { Text(stringResource(R.string.save)) }
                 },
                 dismissButton = {
                     TextButton({
                         confirmClose = null
-                        session = null
+                        setSession(null)
                         then()
                     }) { Text(stringResource(R.string.discard)) }
                 },
