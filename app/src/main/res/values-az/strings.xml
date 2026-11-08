@@ -133,4 +133,6 @@
     <string name="choose_layout">Maket seçin</string>
     <string name="slide_sorter">Slaydlar</string>
     <string name="new_text">Mətn</string>
+    <string name="hide_slide">Slaydı gizlət</string>
+    <string name="show_slide">Slaydı göstər</string>
 </resources>

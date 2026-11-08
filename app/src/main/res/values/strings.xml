@@ -134,4 +134,6 @@
     <string name="choose_layout">Choose layout</string>
     <string name="slide_sorter">Slides</string>
     <string name="new_text">Text</string>
+    <string name="hide_slide">Hide slide</string>
+    <string name="show_slide">Show slide</string>
 </resources>
