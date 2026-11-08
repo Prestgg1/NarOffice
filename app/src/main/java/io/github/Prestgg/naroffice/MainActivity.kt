@@ -138,6 +138,7 @@ class MainActivity : ComponentActivity() {
                 }.onFailure { e ->
                     error = when (e) {
                         is UnsupportedFormatException -> if (e.legacy) errLegacy else errFormat
+                        is io.github.Prestgg.naroffice.ui.pdf.PdfPasswordException -> ctx.getString(R.string.pdf_password)
                         is SecurityException, is java.io.FileNotFoundException -> ctx.getString(R.string.file_missing)
                         else -> errOpen.format(e.message ?: e.javaClass.simpleName)
                     }
@@ -251,7 +252,7 @@ class MainActivity : ComponentActivity() {
                         "application/vnd.ms-word.document.macroEnabled.12",
                         "application/vnd.ms-excel.sheet.macroEnabled.12",
                         "application/vnd.ms-powerpoint.presentation.macroEnabled.12",
-                        "text/csv", "text/comma-separated-values", "application/octet-stream",
+                        "text/csv", "text/comma-separated-values", "application/pdf", "application/octet-stream",
                         "application/zip",
                     ))
                 },
@@ -259,7 +260,7 @@ class MainActivity : ComponentActivity() {
                 onNew = { kind ->
                     val name = ctx.getString(
                         when (kind) {
-                            DocKind.WORD -> R.string.untitled_doc
+                            DocKind.WORD, DocKind.PDF -> R.string.untitled_doc
                             DocKind.SHEET, DocKind.CSV -> R.string.untitled_sheet
                             DocKind.SLIDES -> R.string.untitled_slides
                         },

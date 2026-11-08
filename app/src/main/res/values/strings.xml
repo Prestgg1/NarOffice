@@ -137,4 +137,8 @@
     <string name="hide_slide">Hide slide</string>
     <string name="show_slide">Show slide</string>
     <string name="print_pdf">Print / Save as PDF</string>
+    <string name="go_to_page">Go to page</string>
+    <string name="page_of">%1$d / %2$d</string>
+    <string name="pdf_password">This PDF is password protected and cannot be opened.</string>
+    <string name="pdf_search_unsupported">Searching PDF text needs Android 15 or newer.</string>
 </resources>

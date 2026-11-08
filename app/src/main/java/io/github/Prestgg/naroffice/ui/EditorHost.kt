@@ -18,6 +18,8 @@ fun EditorHost(
         is WordDoc -> DocxEditor(session, d.doc, saveTick, onBack, onSave, onSaveAs, onShare)
         is io.github.Prestgg.naroffice.ui.xlsx.SheetDoc ->
             io.github.Prestgg.naroffice.ui.xlsx.XlsxEditor(session, d, saveTick, onBack, onSave, onSaveAs, onShare)
+        is io.github.Prestgg.naroffice.ui.pdf.PdfDoc ->
+            io.github.Prestgg.naroffice.ui.pdf.PdfViewer(session, d, onBack, onSaveAs, onShare)
         is io.github.Prestgg.naroffice.ui.pptx.SlidesDoc ->
             io.github.Prestgg.naroffice.ui.pptx.PptxEditor(session, d.doc, saveTick, onBack, onSave, onSaveAs, onShare)
     }

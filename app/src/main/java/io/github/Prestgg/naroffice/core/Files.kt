@@ -15,6 +15,7 @@ enum class DocKind(val ext: String, val mime: String) {
     SHEET("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
     SLIDES("pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"),
     CSV("csv", "text/csv"),
+    PDF("pdf", "application/pdf"),
 }
 
 class UnsupportedFormatException(val legacy: Boolean) : Exception()
@@ -76,6 +77,9 @@ object Files {
             }
         }
         val bytes = head
+        if (n >= 4 && head[0] == '%'.code.toByte() && head[1] == 'P'.code.toByte() &&
+            head[2] == 'D'.code.toByte() && head[3] == 'F'.code.toByte()
+        ) return DocKind.PDF
         // Legacy binary Office files (OLE compound documents).
         if (n >= 8 && bytes[0] == 0xD0.toByte() && bytes[1] == 0xCF.toByte()) {
             throw UnsupportedFormatException(legacy = true)

@@ -25,6 +25,12 @@ It reads Office Open XML files directly instead of bundling a desktop office sui
 <li>Add, duplicate, reorder and delete slides, full-screen slideshow</li>
 </ul>
 
+<p><b>PDF</b></p>
+<ul>
+<li>Fast, sharp pages with pinch to zoom, go to page, print and share</li>
+<li>Text search on Android 15 and newer</li>
+</ul>
+
 <p><b>Everywhere</b></p>
 <ul>
 <li>Print or save as PDF</li>

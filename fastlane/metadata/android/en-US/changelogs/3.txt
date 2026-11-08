@@ -1,0 +1,1 @@
+PDF reader: fast page rendering, pinch to zoom, go to page, print and share; text search on Android 15+.

@@ -62,6 +62,7 @@ fun kindColor(kind: DocKind): Color = when (kind) {
     DocKind.WORD -> WordBlue
     DocKind.SHEET, DocKind.CSV -> SheetGreen
     DocKind.SLIDES -> SlideOrange
+    DocKind.PDF -> Color(0xFFD93025)
 }
 
 fun kindLetter(kind: DocKind): String = when (kind) {
@@ -69,6 +70,7 @@ fun kindLetter(kind: DocKind): String = when (kind) {
     DocKind.SHEET -> "X"
     DocKind.CSV -> "C"
     DocKind.SLIDES -> "P"
+    DocKind.PDF -> "PDF"
 }
 
 @Composable
@@ -77,7 +79,9 @@ fun KindBadge(kind: DocKind, size: Int = 40) {
         Modifier.size(size.dp).clip(RoundedCornerShape((size / 4).dp)).background(kindColor(kind)),
         contentAlignment = Alignment.Center,
     ) {
-        Text(kindLetter(kind), color = Color.White, fontWeight = FontWeight.Bold, fontSize = (size * 0.45f).sp)
+        val letter = kindLetter(kind)
+        Text(letter, color = Color.White, fontWeight = FontWeight.Bold,
+            fontSize = (size * if (letter.length > 1) 0.28f else 0.45f).sp)
     }
 }
 

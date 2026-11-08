@@ -35,6 +35,7 @@
                 <data android:mimeType="application/vnd.ms-powerpoint.presentation.macroEnabled.12" />
                 <data android:mimeType="text/csv" />
                 <data android:mimeType="text/comma-separated-values" />
+                <data android:mimeType="application/pdf" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -43,6 +44,7 @@
                 <data android:mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
                 <data android:mimeType="application/vnd.openxmlformats-officedocument.presentationml.presentation" />
                 <data android:mimeType="text/csv" />
+                <data android:mimeType="application/pdf" />
             </intent-filter>
         </activity>
 

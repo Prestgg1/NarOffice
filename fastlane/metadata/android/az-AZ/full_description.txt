@@ -25,6 +25,12 @@ Proqram Office Open XML fayllarını birbaşa oxuyur, ona görə tez açılır v
 <li>Slayd əlavə edin, surətini çıxarın, sırasını dəyişin və silin, tam ekran nümayiş</li>
 </ul>
 
+<p><b>PDF</b></p>
+<ul>
+<li>Sürətli və aydın səhifələr, iki barmaqla böyütmə, səhifəyə keçid, çap və paylaşma</li>
+<li>Android 15 və daha yeni versiyalarda mətn axtarışı</li>
+</ul>
+
 <p><b>Hər yerdə</b></p>
 <ul>
 <li>Çap etmək və ya PDF kimi saxlamaq</li>

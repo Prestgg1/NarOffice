@@ -16,6 +16,7 @@ class WordDoc(val doc: DocxDocument) : OfficeDoc() {
 
 object Openers {
     fun open(kind: DocKind, file: java.io.File): OfficeDoc {
+        if (kind == DocKind.PDF) return io.github.Prestgg.naroffice.ui.pdf.PdfDoc(file)
         if (kind == DocKind.CSV) {
             return io.github.Prestgg.naroffice.ui.xlsx.SheetDoc(
                 io.github.Prestgg.naroffice.xlsx.XlsxDocument.fromCsv(file.readText(Charsets.UTF_8).removePrefix("\uFEFF")), csv = true)
@@ -27,7 +28,7 @@ object Openers {
                 DocKind.SHEET -> io.github.Prestgg.naroffice.ui.xlsx.SheetDoc(
                     io.github.Prestgg.naroffice.xlsx.XlsxDocument(pkg).also { it.recalcIfStale() }, csv = false)
                 DocKind.SLIDES -> io.github.Prestgg.naroffice.ui.pptx.SlidesDoc(io.github.Prestgg.naroffice.pptx.PptxDocument(pkg))
-                DocKind.CSV -> error("unreachable")
+                DocKind.CSV, DocKind.PDF -> error("unreachable")
             }
         } catch (t: Throwable) {
             pkg.close()
@@ -39,5 +40,6 @@ object Openers {
         DocKind.WORD -> WordDoc(DocxDocument.blank())
         DocKind.SHEET, DocKind.CSV -> io.github.Prestgg.naroffice.ui.xlsx.SheetDoc(io.github.Prestgg.naroffice.xlsx.XlsxDocument.blank(), csv = false)
         DocKind.SLIDES -> io.github.Prestgg.naroffice.ui.pptx.SlidesDoc(io.github.Prestgg.naroffice.pptx.PptxDocument.blank())
+        DocKind.PDF -> throw io.github.Prestgg.naroffice.core.UnsupportedFormatException(false)
     }
 }

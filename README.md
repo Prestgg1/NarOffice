@@ -3,7 +3,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
 **A simple, fast and free office suite for Android.** View and edit Word, Excel and
-PowerPoint files on your phone — no account, no ads, no tracking, no internet access.
+PowerPoint files and read PDFs on your phone — no account, no ads, no tracking, no internet access.
 
 NarOffice is written from scratch in Kotlin and Jetpack Compose. It does not bundle a
 desktop office suite: it reads the Office Open XML files directly, so it starts fast,
@@ -30,6 +30,12 @@ else in the file (styles, charts, macros, comments, metadata…) is saved exactl
 - Accurate slide rendering (themes, layouts, placeholders, shapes, pictures, tables)
 - Edit text, move and resize objects, add text boxes and pictures
 - Add, duplicate, reorder and delete slides; full-screen slideshow
+
+**PDF**
+- Fast, sharp page rendering with pinch to zoom
+- Page indicator and go to page
+- Text search on Android 15 and newer
+- Print and share
 
 **Everywhere**
 - Open files from any app or file manager, save in place or as a copy, share

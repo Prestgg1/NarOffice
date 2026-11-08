@@ -136,4 +136,8 @@
     <string name="hide_slide">Slaydı gizlət</string>
     <string name="show_slide">Slaydı göstər</string>
     <string name="print_pdf">Çap et / PDF kimi saxla</string>
+    <string name="go_to_page">Səhifəyə keç</string>
+    <string name="page_of">%1$d / %2$d</string>
+    <string name="pdf_password">Bu PDF şifrə ilə qorunur və açıla bilməz.</string>
+    <string name="pdf_search_unsupported">PDF mətnində axtarış üçün Android 15 və ya daha yeni versiya lazımdır.</string>
 </resources>
