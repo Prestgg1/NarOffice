@@ -253,6 +253,15 @@ fun PptxEditor(
                     MenuAction(stringResource(R.string.save), onSave),
                     MenuAction(stringResource(R.string.save_as), onSaveAs),
                     MenuAction(stringResource(R.string.share), onShare),
+                    MenuAction(stringResource(R.string.print_pdf)) {
+                        closeText()
+                        (ctx as? android.app.Activity)?.let { act ->
+                            io.github.Prestgg.naroffice.ui.export.Export.printPdf(
+                                act, session.name.substringBeforeLast('.'),
+                                (0 until doc.slideCount).count { !doc.slide(it).hidden },
+                            ) { out -> io.github.Prestgg.naroffice.ui.export.Export.slidesToPdf(act, doc, out) }
+                        }
+                    },
                     MenuAction(stringResource(R.string.present)) { closeText(); presenting = true },
                     MenuAction(stringResource(R.string.notes)) { showNotes = !showNotes },
                     MenuAction(stringResource(R.string.add_slide)) { closeText(); layoutDialog = true },

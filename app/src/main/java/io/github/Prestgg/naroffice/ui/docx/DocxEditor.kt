@@ -133,6 +133,7 @@ fun DocxEditor(
     onShare: () -> Unit,
 ) {
     val ctl = remember(doc) { DocxController(doc) }
+    val ctx = LocalContext.current
     session.flush = { ctl.commit() }
     var editing by rememberSaveable { mutableStateOf(session.uri == null) }
     var zoom by rememberSaveable { mutableFloatStateOf(1.35f) }
@@ -206,6 +207,13 @@ fun DocxEditor(
                         MenuAction(stringResource(R.string.save), onSave),
                         MenuAction(stringResource(R.string.save_as), onSaveAs),
                         MenuAction(stringResource(R.string.share), onShare),
+                        MenuAction(stringResource(R.string.print_pdf)) {
+                            ctl.commit()
+                            (ctx as? android.app.Activity)?.let {
+                                io.github.Prestgg.naroffice.ui.export.Export.printHtml(
+                                    it, io.github.Prestgg.naroffice.ui.export.Export.docxToHtml(doc), session.name.substringBeforeLast('.'))
+                            }
+                        },
                         MenuAction(stringResource(R.string.find)) { searching = true },
                         MenuAction(stringResource(R.string.find_replace)) { replaceDialog = true },
                         MenuAction(stringResource(R.string.zoom_in)) { zoom = (zoom * 1.2f).coerceAtMost(4f) },

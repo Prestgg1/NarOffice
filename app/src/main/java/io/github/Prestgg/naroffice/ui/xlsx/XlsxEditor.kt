@@ -114,6 +114,7 @@ fun XlsxEditor(
     onShare: () -> Unit,
 ) {
     val doc = sd.doc
+    val ctx = androidx.compose.ui.platform.LocalContext.current
     var tick by remember { mutableIntStateOf(0) }
     var sheetIndex by remember { mutableIntStateOf(doc.activeSheet.coerceIn(0, doc.sheetCount - 1)) }
     val grid = remember(sheetIndex) { GridState() }
@@ -262,6 +263,13 @@ fun XlsxEditor(
                     add(MenuAction(stringResource(R.string.save_as), onSaveAs))
                     add(MenuAction(stringResource(R.string.share), onShare))
                     add(MenuAction(stringResource(R.string.find)) { searching = true })
+                    add(MenuAction(stringResource(R.string.print_pdf)) {
+                        if (editing) commit(false)
+                        (ctx as? android.app.Activity)?.let {
+                            io.github.Prestgg.naroffice.ui.export.Export.printHtml(
+                                it, io.github.Prestgg.naroffice.ui.export.Export.xlsxToHtml(doc), session.name.substringBeforeLast('.'))
+                        }
+                    })
                     add(MenuAction(stringResource(R.string.zoom_in)) { grid.zoom = (grid.zoom * 1.2f).coerceAtMost(3f) })
                     add(MenuAction(stringResource(R.string.zoom_out)) { grid.zoom = (grid.zoom / 1.2f).coerceAtLeast(0.4f) })
                 },

@@ -136,4 +136,5 @@
     <string name="new_text">Text</string>
     <string name="hide_slide">Hide slide</string>
     <string name="show_slide">Show slide</string>
+    <string name="print_pdf">Print / Save as PDF</string>
 </resources>

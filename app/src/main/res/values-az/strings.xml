@@ -135,4 +135,5 @@
     <string name="new_text">Mətn</string>
     <string name="hide_slide">Slaydı gizlət</string>
     <string name="show_slide">Slaydı göstər</string>
+    <string name="print_pdf">Çap et / PDF kimi saxla</string>
 </resources>
