@@ -1,0 +1,18 @@
+*.iml
+.gradle/
+.kotlin/
+/local.properties
+/.idea/
+.DS_Store
+/build
+*/build
+/captures
+.externalNativeBuild
+.cxx
+keystore.properties
+*.jks
+*.keystore
+.opencode/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
