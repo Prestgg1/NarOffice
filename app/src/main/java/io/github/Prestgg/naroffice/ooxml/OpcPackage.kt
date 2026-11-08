@@ -58,6 +58,7 @@ class OpcPackage private constructor(
         parsed[p] = doc
         dirty.add(p)
         raw.remove(p)
+        relsCache.remove(p)
         if (contentType != null) setContentType(p, contentType)
     }
 
@@ -67,12 +68,14 @@ class OpcPackage private constructor(
         raw[p] = data
         parsed.remove(p)
         dirty.remove(p)
+        relsCache.remove(p)
         if (contentType != null) setContentType(p, contentType)
     }
 
     fun remove(part: String) {
         val p = norm(part)
         raw.remove(p); parsed.remove(p); dirty.remove(p); order.remove(p)
+        relsCache.remove(p)
         val ct = xml("[Content_Types].xml") ?: return
         ct.root.children.removeAll { it is XElement && it.localName == "Override" && it["PartName"] == "/$p" }
         markDirty("[Content_Types].xml")
@@ -169,8 +172,8 @@ class OpcPackage private constructor(
         rels(sourcePart).filter { !it.external && it.type.endsWith(typeSuffix) }
             .map { resolve(sourcePart, it.target) }
 
-    /** Adds a relationship from [sourcePart] and returns its new id. */
-    fun addRel(sourcePart: String, type: String, target: String): String {
+    /** Adds a relationship from [sourcePart] and returns its id ([id] or a new one). */
+    fun addRel(sourcePart: String, type: String, target: String, id: String? = null): String {
         val relsPart = relsPartOf(sourcePart)
         val doc = xml(relsPart) ?: XDocument(
             ArrayList(),
@@ -181,15 +184,15 @@ class OpcPackage private constructor(
         val ids = doc.root.elements.mapNotNull { it["Id"] }.toSet()
         var k = ids.size + 1
         while ("rId$k" in ids) k++
-        val id = "rId$k"
+        val newId = id ?: "rId$k"
         val r = XElement("Relationship")
-        r["Id"] = id
+        r["Id"] = newId
         r["Type"] = type
         r["Target"] = target
         doc.root.children.add(r)
         markDirty(relsPart)
         relsCache.remove(relsPart)
-        return id
+        return newId
     }
 
     fun removeRel(sourcePart: String, id: String) {
