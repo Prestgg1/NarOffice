@@ -336,8 +336,10 @@ object Xml {
         }
 
         private fun unescape(s: String, from: Int, to: Int, attr: Boolean): String {
-            val amp = s.indexOf('&', from)
-            if (amp < 0 || amp >= to) {
+            // Search only inside [from, to): an unbounded indexOf makes parsing quadratic.
+            var amp = -1
+            for (k in from until to) if (s[k] == '&') { amp = k; break }
+            if (amp < 0) {
                 val raw = s.substring(from, to)
                 return if (attr && raw.any { it == '\n' || it == '\t' || it == '\r' })
                     raw.replace('\n', ' ').replace('\t', ' ').replace("\r", "") else raw.replace("\r\n", "\n")
