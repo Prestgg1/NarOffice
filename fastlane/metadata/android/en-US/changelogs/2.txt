@@ -1,0 +1,1 @@
+Large files (presentations with videos or many pictures) open without running out of memory.

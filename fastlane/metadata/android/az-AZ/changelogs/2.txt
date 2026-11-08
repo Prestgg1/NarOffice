@@ -1,0 +1,1 @@
+Böyük fayllar (videolu və ya çoxlu şəkilli təqdimatlar) yaddaş xətası olmadan açılır.
