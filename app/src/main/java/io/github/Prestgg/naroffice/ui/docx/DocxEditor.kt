@@ -489,7 +489,9 @@ private fun TableView(
         val styled = t.el.path("w:tblPr", "w:tblStyle") != null
         styled || (b != null && b.elements.any { it["w:val"] != "nil" && it["w:val"] != "none" })
     }
-    val scale = r.scale
+    // Tables wider than the page are scaled down to fit, so that they wrap instead of scrolling.
+    val totalPt = grid.sum().takeIf { it > 0f } ?: r.maxWidthPt
+    val scale = r.scale * minOf(1f, r.maxWidthPt / totalPt)
     val scroll = rememberScrollState()
     Box(Modifier.fillMaxWidth().padding(vertical = 4.dp).horizontalScroll(scroll)) {
         Column(Modifier.width(IntrinsicSize.Max)) {
@@ -506,7 +508,7 @@ private fun TableView(
                         val colIndex = col
                         var menu by remember { mutableStateOf(false) }
                         Box(
-                            Modifier.width((wPt * scale).coerceIn(36f, 600f).dp).fillMaxHeight()
+                            Modifier.width((wPt * scale).coerceIn(24f, 600f).dp).fillMaxHeight()
                                 .then(if (fill != null) Modifier.background(Color(fill)) else Modifier)
                                 .then(if (bordered) Modifier.border(0.5.dp, Color(0xFF7A7A7A)) else Modifier.border(0.5.dp, Color(0x22000000)))
                                 .then(if (editing) Modifier.combinedClickable(

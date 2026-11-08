@@ -30,12 +30,12 @@ object TextStyles {
     /** Converts resolved props to a Compose span style. [scale] maps points to sp. */
     fun span(p: TextProps, scale: Float, defaultColor: Color = Color(0xFF1B1B1B), link: Boolean = false): SpanStyle {
         val deco = buildList {
-            if (p.underline || (link && p.link != null)) add(TextDecoration.Underline)
+            if (p.underline) add(TextDecoration.Underline)
             if (p.strike) add(TextDecoration.LineThrough)
         }
         val shifted = p.baseline != Baseline.NORMAL
         return SpanStyle(
-            color = p.color?.let { Color(it) } ?: if (p.link != null) Color(0xFF0563C1) else defaultColor,
+            color = p.color?.let { Color(it) } ?: defaultColor,
             fontSize = (p.sizePt * scale * if (shifted) 0.65f else 1f).coerceAtLeast(1f).sp,
             fontWeight = if (p.bold) FontWeight.Bold else FontWeight.Normal,
             fontStyle = if (p.italic) FontStyle.Italic else FontStyle.Normal,
