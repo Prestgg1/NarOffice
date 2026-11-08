@@ -61,8 +61,16 @@ object Files {
     /** Detects the document type from the content, falling back to the file name. */
     fun detect(file: File, name: String): DocKind {
         val lower = name.lowercase()
-        val head = ByteArray(8)
-        val n = file.inputStream().use { it.read(head) }
+        val head = ByteArray(1024)
+        val n = file.inputStream().use { input ->
+            var total = 0
+            while (total < head.size) {
+                val r = input.read(head, total, head.size - total)
+                if (r < 0) break
+                total += r
+            }
+            total
+        }
         if (n >= 4 && head[0] == 'P'.code.toByte() && head[1] == 'K'.code.toByte()) {
             runCatching {
                 ZipFile(file).use { z ->
@@ -77,9 +85,10 @@ object Files {
             }
         }
         val bytes = head
-        if (n >= 4 && head[0] == '%'.code.toByte() && head[1] == 'P'.code.toByte() &&
-            head[2] == 'D'.code.toByte() && head[3] == 'F'.code.toByte()
-        ) return DocKind.PDF
+        // The PDF header may follow some leading bytes (the spec allows it within the first 1 KB).
+        if (String(head, 0, maxOf(n, 0), Charsets.ISO_8859_1).contains("%PDF-") || lower.endsWith(".pdf")) {
+            return DocKind.PDF
+        }
         // Legacy binary Office files (OLE compound documents).
         if (n >= 8 && bytes[0] == 0xD0.toByte() && bytes[1] == 0xCF.toByte()) {
             throw UnsupportedFormatException(legacy = true)
