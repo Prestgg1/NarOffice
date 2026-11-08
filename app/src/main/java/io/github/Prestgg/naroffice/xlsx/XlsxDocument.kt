@@ -137,6 +137,17 @@ class XlsxDocument(val pkg: OpcPackage) {
         }
     }
 
+    /**
+     * Files written by some generators store formulas without results; compute them on open so
+     * that they show values. Files with cached results are left exactly as they are.
+     */
+    fun recalcIfStale() {
+        val stale = sheets.indices.any { i ->
+            sheet(i).cells.values.any { c -> c.childLocal("f") != null && c.childLocal("v")?.textContent.isNullOrEmpty() }
+        }
+        if (stale) recalculate()
+    }
+
     private fun afterChange() {
         recalculate()
         version++
@@ -615,7 +626,7 @@ class XlsxDocument(val pkg: OpcPackage) {
         val BLANK_STYLES = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <styleSheet xmlns="$MAIN_NS"><fonts count="1"><font><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>"""
 
-        fun open(bytes: ByteArray) = XlsxDocument(OpcPackage.read(bytes))
+        fun open(bytes: ByteArray) = XlsxDocument(OpcPackage.read(bytes)).also { it.recalcIfStale() }
 
         /** Plain text of a si/is element (rich text runs concatenated, phonetic runs skipped). */
         fun richText(e: XElement): String {

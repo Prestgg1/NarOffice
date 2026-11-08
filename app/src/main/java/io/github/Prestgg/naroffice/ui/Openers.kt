@@ -19,12 +19,12 @@ object Openers {
         DocKind.SHEET -> io.github.Prestgg.naroffice.ui.xlsx.SheetDoc(io.github.Prestgg.naroffice.xlsx.XlsxDocument.open(bytes), csv = false)
         DocKind.CSV -> io.github.Prestgg.naroffice.ui.xlsx.SheetDoc(
             io.github.Prestgg.naroffice.xlsx.XlsxDocument.fromCsv(String(bytes, Charsets.UTF_8).removePrefix("\uFEFF")), csv = true)
-        else -> throw io.github.Prestgg.naroffice.core.UnsupportedFormatException(false)
+        DocKind.SLIDES -> io.github.Prestgg.naroffice.ui.pptx.SlidesDoc(io.github.Prestgg.naroffice.pptx.PptxDocument.open(bytes))
     }
 
     fun blank(kind: DocKind): OfficeDoc = when (kind) {
         DocKind.WORD -> WordDoc(DocxDocument.blank())
         DocKind.SHEET, DocKind.CSV -> io.github.Prestgg.naroffice.ui.xlsx.SheetDoc(io.github.Prestgg.naroffice.xlsx.XlsxDocument.blank(), csv = false)
-        else -> throw io.github.Prestgg.naroffice.core.UnsupportedFormatException(false)
+        DocKind.SLIDES -> io.github.Prestgg.naroffice.ui.pptx.SlidesDoc(io.github.Prestgg.naroffice.pptx.PptxDocument.blank())
     }
 }
