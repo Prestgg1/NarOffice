@@ -211,7 +211,7 @@ fun PptxEditor(
     val te = textEdit
     LaunchedEffect(te?.tick) {
         if (te == null) return@LaunchedEffect
-        delay(1200)
+        delay(500)
         if (te.commit()) refresh()
     }
 
@@ -424,9 +424,14 @@ private fun EditableSlide(
     Box(
         modifier
             .border(1.dp, Color(0x55000000))
-            .pointerInput(view) {
+            .pointerInput(view, sel) {
                 detectTapGestures(
-                    onTap = { p -> onSelect(layout?.let { hitShape(it, p) }?.id) },
+                    onTap = { p ->
+                        val s = layout?.let { hitShape(it, p) }
+                        onSelect(s?.id)
+                        // An empty placeholder, or a second tap on the selected shape, starts typing.
+                        if (s != null && canHoldText(s) && (s.isEmptyPlaceholder || s.id == sel)) onEditText(s.id)
+                    },
                     onDoubleTap = { p ->
                         val s = layout?.let { hitShape(it, p) }
                         if (s != null && canHoldText(s)) onEditText(s.id)
